@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
+import { ExpertKnowledge } from './pages/ExpertKnowledge/ExpertKnowledge'
 
 const API_URL = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000').replace(/\/$/, '')
 
@@ -9,6 +10,45 @@ type ChatResponse = {
 }
 
 function App() {
+  const [isExpertKnowledge, setIsExpertKnowledge] = useState(
+    window.location.pathname === '/expert-knowledge',
+  )
+
+  useEffect(() => {
+    const onPopState = () => setIsExpertKnowledge(window.location.pathname === '/expert-knowledge')
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
+  function navigate(path: '/' | '/expert-knowledge') {
+    window.history.pushState(null, '', path)
+    setIsExpertKnowledge(path === '/expert-knowledge')
+  }
+
+  if (isExpertKnowledge) {
+    return (
+      <main className="knowledge-shell">
+        <header className="topbar">
+          <button className="brand-button" onClick={() => navigate('/')}>
+            <p className="eyebrow">Back To RAG Platform</p>
+            <strong>NEXUS</strong>
+          </button>
+          <nav className="view-tabs" aria-label="Platform sections">
+            <button onClick={() => navigate('/')}>RAG Platform</button>
+            <button className="active" onClick={() => navigate('/expert-knowledge')}>
+              Expert Knowledge
+            </button>
+          </nav>
+        </header>
+        <ExpertKnowledge />
+      </main>
+    )
+  }
+
+  return <RagHome onOpenExpertKnowledge={() => navigate('/expert-knowledge')} />
+}
+
+function RagHome({ onOpenExpertKnowledge }: { onOpenExpertKnowledge: () => void }) {
   const [apiStatus, setApiStatus] = useState('checking')
   const [file, setFile] = useState<File | null>(null)
   const [uploadMessage, setUploadMessage] = useState('')
@@ -99,6 +139,9 @@ function App() {
           <p className="eyebrow">NEXUS</p>
           <h1>AI Knowledge Chatbot</h1>
         </div>
+        <button className="expert-link" onClick={onOpenExpertKnowledge}>
+          Expert Knowledge
+        </button>
         <div className="status-card">
           <span className={`status-dot ${apiStatus}`}></span>
           <div>

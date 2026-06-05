@@ -12,6 +12,7 @@ from backend.config import settings
 from backend.core.database import get_db, init_db
 from backend.routes.chat import router as chat_router
 from backend.routes.ingestion import router as ingestion_router
+from backend.services.fixed_knowledge import seed_fixed_knowledge
 from backend.services.graph import build_chunk_graph
 
 logger = logging.getLogger(__name__)
@@ -32,10 +33,13 @@ app.include_router(chat_router)
 
 @app.on_event("startup")
 async def startup() -> None:
+    database_available = True
     try:
         await init_db()
     except Exception as exc:
+        database_available = False
         logger.warning("Database unavailable; running with in-memory fallback: %s", exc)
+    await seed_fixed_knowledge(use_database=database_available)
 
 
 @app.get("/api/health")

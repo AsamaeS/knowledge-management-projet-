@@ -7,6 +7,10 @@ _chunks: List[Dict[str, Any]] = []
 _documents: List[Dict[str, Any]] = []
 
 
+def has_document_memory(filename: str) -> bool:
+    return any(document["filename"] == filename for document in _documents)
+
+
 def store_chunks_memory(
     *,
     filename: str,
